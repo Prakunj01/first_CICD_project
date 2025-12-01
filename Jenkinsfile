@@ -47,30 +47,31 @@ pipeline {
     }
 
     stage('Deploy to EKS') {
-      steps {
+  steps {
 
-        withCredentials([
-          file(credentialsId: 'kubeconfig-eks', variable: 'KUBECONFIG_FILE'),
-          [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CRED_ID}"]
-        ]) {
+    withCredentials([
+      file(credentialsId: 'kubeconfig-eks', variable: 'KUBECONFIG_FILE'),
+      [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CRED_ID}"]
+    ]) {
 
-          sh '''
-            export KUBECONFIG=$KUBECONFIG_FILE
+      sh '''
+        export KUBECONFIG=$KUBECONFIG_FILE
 
-            # Replace image placeholder
-            sed -i "s|<IMAGE>|${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}|g" k8s/deployment.yaml
+        # Force AWS CLI to authenticate EKS
+        aws sts get-caller-identity
 
-            echo "Deploying to EKS..."
-            kubectl apply -f k8s/deployment.yaml
+        # Generate token manually to ensure kubectl auth works
+        aws eks get-token --region ${AWS_REGION} --cluster-name devops-eks > /dev/null
 
-            if [ -f k8s/service.yaml ]; then
-              kubectl apply -f k8s/service.yaml
-            fi
+        # Replace deployment image
+        sed -i "s|<IMAGE>|${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}|g" k8s/deployment.yaml
 
-            echo "Deployment Successfully Applied!"
-          '''
-        }
-      }
+        echo "Deploying to EKS..."
+        kubectl apply --validate=false -f k8s/deployment.yaml
+      '''
     }
+  }
+}
+
   }
 }
