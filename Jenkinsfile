@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-    docker {
-      image 'amazon/aws-cli:2.15.0'
-      args '-v /var/run/docker.sock:/var/run/docker.sock'
-    }
-  }
+  agent any
 
   environment {
     AWS_CRED_ID = 'aws-ecr-creds'
@@ -25,6 +20,7 @@ pipeline {
       steps {
         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${env.AWS_CRED_ID}"]]) {
           sh '''
+            aws configure set default.region ${AWS_REGION}
             aws ecr get-login-password --region ${AWS_REGION} \
               | docker login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
           '''
