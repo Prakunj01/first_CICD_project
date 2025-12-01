@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bt-test-app
+  labels:
+    app: bt-test-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bt-test-app
+  template:
+    metadata:
+      labels:
+        app: bt-test-app
+    spec:
+      containers:
+        - name: bt-test-app
+          image: <IMAGE>
+          ports:
+            - containerPort: 80
