@@ -1,11 +1,16 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'amazon/aws-cli:2.15.0'
+      args '-v /var/run/docker.sock:/var/run/docker.sock'
+    }
+  }
 
   environment {
     AWS_CRED_ID = 'aws-ecr-creds'
     AWS_REGION  = 'ap-south-1'
     ECR_ACCOUNT = '160056257840'
-    ECR_REPO    = '<YOUR_ECR_REPO_NAME>'
+    ECR_REPO    = 'bt-test-app'
     IMAGE_TAG   = "${env.BUILD_NUMBER}"
   }
 
