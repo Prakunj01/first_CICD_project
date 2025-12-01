@@ -1,0 +1,10 @@
+aws-terraform-starter/
+eks-network/
+eks-terraform/
+
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl
+*.exe
